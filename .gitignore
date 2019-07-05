@@ -19,6 +19,11 @@ node_modules/
 .idea
 *.iml
 
+# Server
+server/*
+!server/docker-compose.yml
+!server/nginx.conf
+
 # other
 .DS_Store
 

@@ -5,27 +5,26 @@ const fs = require('fs-extra');
 const path = require('path');
 const url = require('url');
 const ImageOptimizer = require('./optimizers/ImageOptimizer');
-const JavasScriptOptimizer = require('./optimizers/JavaScriptOptimizer');
+const ScriptOptimizer = require('./optimizers/ScriptOptimizer');
 const StyleOptimizer = require('./optimizers/StyleOptimizer');
 
 const { URL } = url;
 
 async function booster(config) {
-  const { srcDir, destDir, siteURL, lighthouseResultFile } = config;
-  const lighthouseResult = fs.readFileSync(lighthouseResultFile, 'utf8');
+  const { srcDir, destDir, siteURL, artifactsFile } = config;
+  const artifacts = fs.readJsonSync(artifactsFile);
   const context = {
     srcDir,
     destDir,
     siteURL,
-    audits: lighthouseResult.audits,
   };
   const { pathname } = new URL(url.resolve(siteURL.toString(), './index.html'));
   const indexHtml = path.resolve(srcDir, `.${pathname}`);
   const html = fs.readFileSync(indexHtml, 'utf8');
   const $ = cheerio.load(html);
-  await ImageOptimizer.optimize($, context);
-  await StyleOptimizer.optimize($, context);
-  await JavasScriptOptimizer.optimize($, context);
+  await ImageOptimizer.optimize($, artifacts, context);
+  await StyleOptimizer.optimize($, artifacts, context);
+  await ScriptOptimizer.optimize($, artifacts, context);
   fs.outputFileSync(path.resolve(destDir, `.${pathname}`), $.html());
 }
 
@@ -36,7 +35,7 @@ booster({
   srcDir: path.resolve(projectDir, './server/www'),
   destDir: path.resolve(projectDir, './server/dist'),
   siteURL: new URL(home),
-  lighthouseResultFile: path.resolve(projectDir, './server/lighthouse.json'),
+  artifactsFile: path.resolve(projectDir, './server/artifacts.json'),
 }).then(
   () => {
     console.log('Optimization Finished!');

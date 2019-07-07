@@ -7,7 +7,7 @@ const Optimizer = require('./Optimizer');
 
 const { URL } = url;
 
-class JavaScriptOptimizer extends Optimizer {
+class ScriptOptimizer extends Optimizer {
   static async optimizeOnElement($element, context) {
     const src = $element.attr('src');
     const scriptUrl = new URL(url.resolve(context.siteURL.toString(), src));
@@ -22,7 +22,7 @@ class JavaScriptOptimizer extends Optimizer {
     await fs.outputFile(destPath, data);
   }
 
-  static async optimize($, context) {
+  static async optimize($, artifacts, context) {
     const subTasks = [];
     $('script[src]').each((i, element) => {
       subTasks.push(this.optimizeOnElement($(element), context));
@@ -31,4 +31,4 @@ class JavaScriptOptimizer extends Optimizer {
   }
 }
 
-module.exports = JavaScriptOptimizer;
+module.exports = ScriptOptimizer;

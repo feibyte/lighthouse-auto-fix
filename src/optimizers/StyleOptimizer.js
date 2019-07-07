@@ -22,7 +22,7 @@ class StyleOptimizer extends Optimizer {
     await fs.outputFile(destPath, data);
   }
 
-  static async optimize($, context) {
+  static async optimize($, artifacts, context) {
     const subTasks = [];
     $('link[href][rel="stylesheet"]').each((i, element) => {
       subTasks.push(this.optimizeOnElement($(element), context));

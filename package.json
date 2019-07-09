@@ -15,13 +15,16 @@
   "dependencies": {
     "autoprefixer": "^9.6.1",
     "cheerio": "^1.0.0-rc.3",
+    "chrome-launcher": "^0.10.7",
     "cssnano": "^4.1.10",
     "fs-extra": "^8.1.0",
+    "html-minifier": "^4.0.0",
     "imagemin": "^7.0.0",
     "imagemin-webp": "^5.1.0",
     "lighthouse": "^5.1.0",
     "lodash": "^4.17.11",
-    "postcss": "^7.0.17"
+    "postcss": "^7.0.17",
+    "uglify-es": "^3.3.9"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

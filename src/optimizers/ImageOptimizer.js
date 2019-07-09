@@ -110,10 +110,13 @@ class ImageOptimizer extends Optimizer {
       destination: path.dirname(destPath),
       plugins: [imageminWebp({ quality: 85, resize })],
     });
-    const newDestPath = toUrlFromPath(context.destDir, files[0].destinationPath);
+    let relativeUrl = pathname;
+    if (files[0]) {
+      relativeUrl = toUrlFromPath(context.destDir, files[0].destinationPath);
+    }
     return {
       ...image,
-      relativeUrl: newDestPath,
+      relativeUrl,
     };
   }
 

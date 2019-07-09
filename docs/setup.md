@@ -33,11 +33,6 @@ Then go to server directory start the server:
 cd /server && docker-compose up
 ```
 
-Then run (Ensure you have installed lighthouse)
-```
-lighthouse https://localhost/blog --quiet --chrome-flags="--headless" --output-path=./server/lighthouse.json --output json
-```
-
 That's all!
 
 Now you could work on optimization. When you finish it, running `HOME=https://localhost/blog/ node scr/booster.js` will generate new website under `server/dist`.

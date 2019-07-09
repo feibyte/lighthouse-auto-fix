@@ -18,6 +18,14 @@ const isVisible = (image, viewportDimensions) => {
   return visiblePixels > 0;
 };
 
+/**
+ * Optimize Strategy
+ * 1. Ignore all images from a third server
+ * 2. Make use of lazyload
+ * 3. Transform to webp
+ * 4. Resize image based on max size
+ * 5. Reduce image
+ */
 class ImageOptimizer extends Optimizer {
   static get meta() {
     return {
@@ -45,7 +53,9 @@ class ImageOptimizer extends Optimizer {
         hasBeenUsedInCss: imageElements.some(image => image.isCss),
         usesObjectFit: imageElements.some(image => image.usesObjectFit),
       };
-      images.push(combinedImage);
+      if (combinedImage.src) {
+        images.push(combinedImage);
+      }
     });
     return images;
   }
@@ -137,7 +147,7 @@ class ImageOptimizer extends Optimizer {
     images.forEach(image => imageMapByUrl.set(image.src, image));
     const pageUrl = artifacts.URL.finalUrl;
     $('img[src]').each((i, element) => {
-      const imageUrl = url.resolve(pageUrl, $(element).attr('src'));
+      const imageUrl = decodeURIComponent(url.resolve(pageUrl, $(element).attr('src')));
       const image = imageMapByUrl.get(imageUrl);
       if (image) {
         this.applyOptimizedImage($(element), image);

@@ -5,6 +5,8 @@ const path = require('path');
 const fs = require('fs-extra');
 const UglifyJS = require('uglify-es');
 const Optimizer = require('./Optimizer');
+const logger = require('../utils/logger');
+const { isSameSite, toMapByKey, toFullPathUrl } = require('../utils/helper');
 
 const { URL } = url;
 
@@ -15,11 +17,13 @@ class ScriptOptimizer extends Optimizer {
     };
   }
 
-  static extract(artifacts) {
+  static refine(artifacts) {
+    const pageUrl = artifacts.URL.finalUrl;
     return artifacts.ScriptElements.filter(scriptElement => scriptElement.src).map(
       scriptElement => {
         return {
           ...scriptElement,
+          isFromSameSite: isSameSite(pageUrl, scriptElement.src),
           shouldMinify: true,
         };
       }
@@ -28,8 +32,7 @@ class ScriptOptimizer extends Optimizer {
 
   static async optimizeScript(script, context) {
     const scriptUrl = new URL(script.src);
-    const isUrlFromCurrentSite = scriptUrl.origin === context.siteURL.origin;
-    if (isUrlFromCurrentSite && script.shouldMinify) {
+    if (script.isFromSameSite && script.shouldMinify) {
       const result = UglifyJS.minify(script.content);
       if (!result.error) {
         const absolutePath = scriptUrl.pathname;
@@ -44,22 +47,19 @@ class ScriptOptimizer extends Optimizer {
     $element.attr('src', script.src);
   }
 
-  static async optimize($, artifacts, context) {
+  static async optimize($, artifacts, audits, context) {
     const scripts = await Promise.all(
-      this.extract(artifacts).map(script => this.optimizeScript(script, context))
+      this.refine(artifacts).map(script => this.optimizeScript(script, context))
     );
-    const scriptMapByUrl = new Map();
-    scripts.forEach(script => scriptMapByUrl.set(script.src, script));
+    const scriptMapByUrl = toMapByKey(scripts, 'src');
     const pageUrl = artifacts.URL.finalUrl;
     $('script[src]').each((i, element) => {
-      const scriptUrl = decodeURIComponent(url.resolve(pageUrl, $(element).attr('src')));
+      const scriptUrl = toFullPathUrl(pageUrl, $(element).attr('src'));
       const script = scriptMapByUrl.get(scriptUrl);
       if (script) {
         this.applyOptimizedScript($(element), script);
       } else {
-        console.warn(
-          `Lack information of script which url is ${scriptUrl}. There must be something wrong.`
-        );
+        logger.warn(`Lack information of script which url is ${scriptUrl}.`);
       }
     });
   }

@@ -12,21 +12,20 @@ const StyleOptimizer = require('./optimizers/StyleOptimizer');
 
 const { URL } = url;
 
+const optimizers = [ImageOptimizer, StyleOptimizer, ScriptOptimizer];
+
 async function booster(config) {
   const { srcDir, destDir, siteURL, artifacts, audits } = config;
   const context = {
     srcDir,
     destDir,
     siteURL,
-    audits,
   };
   const { pathname } = new URL(url.resolve(siteURL.toString(), './index.html'));
   const indexHtml = path.resolve(srcDir, `.${pathname}`);
   const html = fs.readFileSync(indexHtml, 'utf8');
   const $ = cheerio.load(html);
-  await ImageOptimizer.optimize($, artifacts, context);
-  await StyleOptimizer.optimize($, artifacts, context);
-  await ScriptOptimizer.optimize($, artifacts, context);
+  await Promise.all(optimizers.map(optimizer => optimizer.optimize($, artifacts, audits, context)));
   const minifiedHtml = minify($.html(), {
     collapseWhitespace: true,
     removeComments: true,

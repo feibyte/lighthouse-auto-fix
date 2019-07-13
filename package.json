@@ -24,6 +24,7 @@
     "lighthouse": "^5.1.0",
     "lodash": "^4.17.11",
     "postcss": "^7.0.17",
+    "request": "^2.88.0",
     "uglify-es": "^3.3.9"
   },
   "devDependencies": {

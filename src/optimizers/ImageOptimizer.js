@@ -8,7 +8,13 @@ const imagemin = require('imagemin');
 const imageminWebp = require('imagemin-webp');
 const Optimizer = require('./Optimizer');
 const logger = require('../utils/logger');
-const { toUrlFromPath, isSameSite, toMapByKey, toFullPathUrl } = require('../utils/helper');
+const {
+  toUrlFromPath,
+  isSameSite,
+  toMapByKey,
+  toFullPathUrl,
+  getAuditItems,
+} = require('../utils/helper');
 
 const { URL } = url;
 
@@ -37,9 +43,8 @@ class ImageOptimizer extends Optimizer {
     const pageUrl = artifacts.URL.finalUrl;
     const imageElementsGroupBySrc = _.groupBy(artifacts.ImageElements, 'src');
     const images = [];
-    const offScreenImageUrls = _.get(audits, '["offscreen-image"].details.teams', []).map(
-      item => item.url
-    );
+    const offScreenImageUrls = getAuditItems(audits, 'offscreen-images').map(item => item.url);
+    const webpImageUrls = getAuditItems(audits, 'uses-webp-images').map(item => item.url);
     _.each(imageElementsGroupBySrc, imageElements => {
       // A certain image might appear in a few elements, Sadly we're not able to get the xpath information.
       // We have to be conservative as soon as possible.
@@ -60,6 +65,7 @@ class ImageOptimizer extends Optimizer {
         src,
         isFromSameSite: isSameSite(pageUrl, src),
         isOffScreen: offScreenImageUrls.includes(src),
+        shouldUseWep: webpImageUrls.includes(src),
         resizable,
         resize,
       };
@@ -99,7 +105,7 @@ class ImageOptimizer extends Optimizer {
       const srcPath = path.resolve(context.srcDir, `.${pathname}`);
       const destPath = path.resolve(context.destDir, `.${pathname}`);
       optimizedUrl = pathname;
-      if (image.resizable) {
+      if (image.shouldUseWep) {
         const files = await imagemin([srcPath], {
           destination: path.dirname(destPath),
           plugins: [imageminWebp({ resize: image.resize })],

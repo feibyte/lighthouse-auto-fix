@@ -2,12 +2,17 @@
 
 const url = require('url');
 const path = require('path');
+const _ = require('lodash');
 
 const toUrlFromPath = (destDir, destPath) => `/${path.relative(destDir, destPath)}`;
 
 const toLocalPathFromUrl = (src, dir) => {
   const { pathname } = new URL(src);
-  return path.resolve(dir, `.${pathname}`);
+  let filePath = pathname;
+  if (/\/$/.test(filePath)) {
+    filePath += 'index.html';
+  }
+  return path.resolve(dir, `.${filePath}`);
 };
 
 const isSameSite = (urlStringA, urlStringB) => {
@@ -29,10 +34,13 @@ const toFullPathUrl = (pageUrl, src) => {
   return decodeURIComponent(url.resolve(pageUrl, src));
 };
 
+const getAuditItems = (audits, key) => _.get(audits, `["${key}"].details.items`) || [];
+
 module.exports = {
   toUrlFromPath,
   toLocalPathFromUrl,
   isSameSite,
   toMapByKey,
   toFullPathUrl,
+  getAuditItems,
 };

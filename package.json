@@ -1,6 +1,6 @@
 {
   "name": "lighthouse-auto-fix",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Automatically resolve lighthouse issues",
   "main": "index.js",
   "bin": {

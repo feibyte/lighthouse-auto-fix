@@ -1,8 +1,11 @@
 {
-  "name": "booster",
+  "name": "lighthouse-auto-fix",
   "version": "0.1.0",
-  "description": "A tool of optimising static website automatically",
+  "description": "Automatically resolve lighthouse issues",
   "main": "index.js",
+  "bin": {
+    "lighthouse-auto-fix": "bin/lighthouse-auto-fix.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,7 +28,8 @@
     "lodash": "^4.17.11",
     "postcss": "^7.0.17",
     "request": "^2.88.0",
-    "uglify-es": "^3.3.9"
+    "uglify-es": "^3.3.9",
+    "yargs": "^13.2.4"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

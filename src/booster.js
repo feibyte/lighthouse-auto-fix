@@ -11,11 +11,10 @@ const StyleOptimizer = require('./optimizers/StyleOptimizer');
 const HTMLOptimizer = require('./optimizers/HTMLOptimizer');
 const crawl = require('./crawl');
 const { getAuditItems, isSameSite, toLocalPathFromUrl } = require('./utils/helper');
-const logger = require('./utils/logger');
 
 const optimizers = [ImageOptimizer, StyleOptimizer, ScriptOptimizer, HTMLOptimizer];
 
-async function booster(config) {
+async function autoFix(config) {
   const { srcDir, destDir, artifacts, audits } = config;
   const context = { srcDir, destDir };
   const pageUrl = artifacts.URL.finalUrl;
@@ -35,8 +34,7 @@ async function booster(config) {
 
 const projectDir = path.resolve(__dirname, '..');
 
-const run = async () => {
-  const entryUrl = process.env.HOME || 'https://localhost';
+const booster = async (entryUrl, config) => {
   const result = await setup(entryUrl, {
     emulatedFormFactor: 'desktop',
     logLevel: 'silent',
@@ -52,21 +50,12 @@ const run = async () => {
     .map(request => request.url);
   const srcDir = path.resolve(projectDir, './server/www');
   await crawl(filteredRequests, srcDir);
-  await booster({
+  await autoFix({
     srcDir,
-    destDir: path.resolve(projectDir, './server/dist'),
+    destDir: path.resolve(process.cwd(), config.outDir),
     artifacts,
     audits,
   });
 };
-
-run()
-  .then(() => {
-    logger.log('Optimization Finished!');
-    logger.log('You could switch server root to "/server/dist/" and run lighthouse again.');
-  })
-  .catch(err => {
-    logger.error(err);
-  });
 
 module.exports = booster;

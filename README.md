@@ -1,2 +1,2 @@
-# booster
-🚀 Optimise static website automatically
+# lighthouse-auto-fix
+🚀 Automatically resolve lighthouse issues

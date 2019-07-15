@@ -3,7 +3,6 @@
 const url = require('url');
 const path = require('path');
 const fs = require('fs-extra');
-const _ = require('lodash');
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
 const postcss = require('postcss');
@@ -11,7 +10,7 @@ const {
   computeCSSTokenLength,
 } = require('lighthouse/lighthouse-core/lib/minification-estimator.js');
 const logger = require('../utils/logger');
-const { isSameSite, toMapByKey, toFullPathUrl } = require('../utils/helper');
+const { isSameSite, toMapByKey, toFullPathUrl, getAuditItems } = require('../utils/helper');
 const Optimizer = require('./Optimizer');
 
 const { URL } = url;
@@ -36,9 +35,9 @@ class StyleOptimizer extends Optimizer {
 
   static refine(artifacts, audits) {
     const pageUrl = artifacts.URL.finalUrl;
-    const { rules, stylesheets } = artifacts.CSSUsage;
+    const { rules, stylesheets = [] } = artifacts.CSSUsage;
 
-    const unusedCss = _.get(audits, '["unused-css-rules"].details.teams', []);
+    const unusedCss = getAuditItems(audits, 'unused-css-rules');
     const unusedCSSMapByUrl = toMapByKey(unusedCss, 'url');
 
     return stylesheets

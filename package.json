@@ -26,8 +26,10 @@
     "imagemin-webp": "^5.1.0",
     "lighthouse": "^5.1.0",
     "lodash": "^4.17.11",
+    "pacote": "^9.5.2",
     "postcss": "^7.0.17",
     "request": "^2.88.0",
+    "semver": "^6.2.0",
     "uglify-es": "^3.3.9",
     "yargs": "^13.2.4"
   },

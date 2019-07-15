@@ -14,6 +14,10 @@ const logger = require('../src/utils/logger');
       default: 'dist',
       describe: 'set the output directory. defaults to "dist"',
     })
+    .option('device', {
+      default: 'desktop',
+      choices: ['mobile', 'desktop'],
+    })
     .check(argv => {
       if (argv._.length > 0) {
         return true;

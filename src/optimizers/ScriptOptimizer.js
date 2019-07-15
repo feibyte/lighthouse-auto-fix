@@ -4,9 +4,27 @@ const url = require('url');
 const path = require('path');
 const fs = require('fs-extra');
 const UglifyJS = require('uglify-es');
+const pacote = require('pacote');
+const semver = require('semver');
 const Optimizer = require('./Optimizer');
 const logger = require('../utils/logger');
-const { isSameSite, toMapByKey, toFullPathUrl } = require('../utils/helper');
+const { isSameSite, toMapByKey, toFullPathUrl, getAuditItems } = require('../utils/helper');
+
+const getLatestVersion = async (npm, version) => {
+  const { versions } = await pacote.packument(npm);
+  return semver.maxSatisfying(Object.keys(versions), `^${version}`);
+};
+
+const getCdnUrl = (npm, version) => {
+  switch (npm) {
+    case 'jquery':
+      return `https://cdn.jsdelivr.net/npm/jquery@${version}/dist/jquery.min.js`;
+    case 'moment':
+      return `https://cdn.jsdelivr.net/npm/moment@${version}/min/moment-with-locales.min.js`;
+    default:
+      throw new Error(`Failed to find ${npm}, please add this package.`);
+  }
+};
 
 const { URL } = url;
 
@@ -17,21 +35,54 @@ class ScriptOptimizer extends Optimizer {
     };
   }
 
-  static refine(artifacts) {
-    const pageUrl = artifacts.URL.finalUrl;
-    return artifacts.ScriptElements.filter(scriptElement => scriptElement.src).map(
-      scriptElement => {
-        return {
-          ...scriptElement,
-          isFromSameSite: isSameSite(pageUrl, scriptElement.src),
-          shouldMinify: true,
-        };
-      }
+  static detectScriptUrlByLib(lib, scriptUrls) {
+    let matchedScript = scriptUrls.find(scriptUrl =>
+      new RegExp(`${lib.name}@${lib.version}`, 'i').test(scriptUrl)
     );
+    if (!matchedScript) {
+      matchedScript = scriptUrls.find(scriptUrl => new RegExp(`${lib.name}`, 'i').test(scriptUrl));
+    }
+    return matchedScript;
+  }
+
+  static refine(artifacts, audits) {
+    const pageUrl = artifacts.URL.finalUrl;
+    const jsLibs = getAuditItems(audits, 'js-libraries');
+    const scriptUrls = getAuditItems(audits, 'network-requests')
+      .filter(script => script.resourceType === 'Script')
+      .map(script => script.url);
+    const vulnerableLibs = getAuditItems(audits, 'no-vulnerable-libraries').map(
+      item => item.detectedLib.text
+    );
+    const jsLibsWithScript = jsLibs.map(lib => {
+      return {
+        npm: lib.npm,
+        version: lib.version,
+        isVulnerable: vulnerableLibs.includes(`${lib.name}@${lib.version}`),
+        matchedScript: this.detectScriptUrlByLib(lib, scriptUrls),
+      };
+    });
+
+    return scriptUrls.map(scriptUrl => {
+      const lib = jsLibsWithScript.find(({ matchedScript }) => matchedScript === scriptUrl);
+      return {
+        src: scriptUrl,
+        isFromSameSite: isSameSite(pageUrl, scriptUrl),
+        shouldMinify: true,
+        lib,
+      };
+    });
   }
 
   static async optimizeScript(script, context) {
     const scriptUrl = new URL(script.src);
+    if (script.lib && script.lib.isVulnerable) {
+      const latestVersion = await getLatestVersion(script.lib.npm, script.lib.version);
+      return {
+        ...script,
+        optimizedUrl: getCdnUrl(script.lib.npm, latestVersion),
+      };
+    }
     if (script.isFromSameSite && script.shouldMinify) {
       const result = UglifyJS.minify(script.content);
       if (!result.error) {
@@ -40,16 +91,16 @@ class ScriptOptimizer extends Optimizer {
         await fs.outputFile(destPath, result.code);
       }
     }
-    return script;
+    return { optimizedUrl: script.src, ...script };
   }
 
   static applyOptimizedScript($element, script) {
-    $element.attr('src', script.src);
+    $element.attr('src', script.optimizedUrl);
   }
 
   static async optimize($, artifacts, audits, context) {
     const scripts = await Promise.all(
-      this.refine(artifacts).map(script => this.optimizeScript(script, context))
+      this.refine(artifacts, audits).map(script => this.optimizeScript(script, context))
     );
     const scriptMapByUrl = toMapByKey(scripts, 'src');
     const pageUrl = artifacts.URL.finalUrl;

@@ -108,7 +108,7 @@ class ImageOptimizer extends Optimizer {
       if (image.shouldUseWep) {
         const files = await imagemin([srcPath], {
           destination: path.dirname(destPath),
-          plugins: [imageminWebp({ resize: image.resize })],
+          plugins: [imageminWebp({ resize: image.resize, quality: 100 })],
         });
         if (files[0]) {
           optimizedUrl = toUrlFromPath(context.destDir, files[0].destinationPath);

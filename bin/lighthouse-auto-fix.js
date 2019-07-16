@@ -3,7 +3,7 @@
 'use strict';
 
 const yargs = require('yargs');
-const booster = require('../src/booster');
+const booster = require('../src/index');
 const logger = require('../src/utils/logger');
 
 (() => {

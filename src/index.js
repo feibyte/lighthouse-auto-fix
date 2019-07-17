@@ -10,7 +10,7 @@ const projectDir = path.resolve(__dirname, '..');
 
 const booster = async (entryUrl, config) => {
   const result = await setup(entryUrl, {
-    emulatedFormFactor: 'desktop',
+    emulatedFormFactor: config.device,
     logLevel: 'silent',
   });
   const {

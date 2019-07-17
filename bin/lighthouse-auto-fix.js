@@ -27,7 +27,8 @@ const logger = require('../src/utils/logger');
     .help('help').argv;
   const entryUrl = flags._[0];
   const config = {
-    outDir: flags.outDir,
+    outDir: flags['out-dir'],
+    device: flags.device,
   };
   booster(entryUrl, config)
     .then(() => {

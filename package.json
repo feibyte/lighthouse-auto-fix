@@ -7,7 +7,9 @@
     "lighthouse-auto-fix": "bin/lighthouse-auto-fix.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test-coverage": "jest --coverage",
+    "test-watch": "jest --watch"
   },
   "keywords": [
     "Optimisation",
@@ -39,6 +41,7 @@
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-import": "^2.18.0",
     "eslint-plugin-prettier": "^3.1.0",
+    "jest": "^24.8.0",
     "prettier": "^1.18.2"
   }
 }

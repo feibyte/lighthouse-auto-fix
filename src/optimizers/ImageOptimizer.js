@@ -76,7 +76,10 @@ class ImageOptimizer extends Optimizer {
 
   static computeResize(displayedMaxWidth, displayedMaxHeight, naturalWidth, naturalHeight) {
     if (!(displayedMaxWidth < naturalWidth && displayedMaxHeight < naturalHeight)) {
-      return undefined;
+      return {
+        width: naturalWidth,
+        height: naturalHeight,
+      };
     }
     const ratio = naturalWidth / naturalHeight;
     if (displayedMaxWidth >= displayedMaxHeight * ratio) {

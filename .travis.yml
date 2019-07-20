@@ -1,0 +1,7 @@
+language: node_js
+install:
+  - npm install
+script:
+  - npm run test-coverage
+after_success: true
+  - npm run coveralls

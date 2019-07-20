@@ -36,6 +36,7 @@
     "yargs": "^13.2.4"
   },
   "devDependencies": {
+    "coveralls": "^3.0.5",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^6.0.0",

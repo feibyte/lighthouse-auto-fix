@@ -1,4 +1,4 @@
-# lighthouse-auto-fix(WIP)
+# lighthouse-auto-fix(WIP) [![Build Status](https://travis-ci.com/fedeoo/lighthouse-auto-fix.svg?branch=master)](https://travis-ci.com/fedeoo/lighthouse-auto-fix) [![Coveralls](https://img.shields.io/coveralls/fedeoo/lighthouse-auto-fix.svg)](https://coveralls.io/github/fedeoo/lighthouse-auto-fix) [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](https://github.com/fedeoo/lighthouse-auto-fix/pulls)
 > 🚀 Automatically resolve lighthouse issues, especially for static website.
 
 ## Quick Overview

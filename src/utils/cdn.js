@@ -3,9 +3,8 @@
 const crypto = require('crypto');
 const request = require('request');
 
-const hash = crypto.createHash('sha256');
-
 const calcHash = content => {
+  const hash = crypto.createHash('sha256');
   hash.update(content);
   return hash.digest('hex');
 };
@@ -39,7 +38,8 @@ const generateUrl = ({ type, name, version, file }) => {
   return url.replace(/(css|js)$/, 'min.$1');
 };
 
-const findAvailableUrlByHash = hashHex => lookupFilesByHash(hashHex).then(generateUrl);
+const findAvailableUrlByHash = hashHex =>
+  lookupFilesByHash(hashHex).then(generateUrl, () => undefined);
 
 module.exports = {
   calcHash,

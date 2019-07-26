@@ -8,6 +8,7 @@ const pacote = require('pacote');
 const semver = require('semver');
 const Optimizer = require('./Optimizer');
 const logger = require('../utils/logger');
+const { calcHash, findAvailableUrlByHash } = require('../utils/cdn');
 const { isSameSite, toMapByKey, toFullPathUrl, getAuditItems } = require('../utils/helper');
 
 const getLatestVersion = async (npm, version) => {
@@ -21,6 +22,8 @@ const getCdnUrl = (npm, version) => {
       return `https://cdn.jsdelivr.net/npm/jquery@${version}/dist/jquery.min.js`;
     case 'moment':
       return `https://cdn.jsdelivr.net/npm/moment@${version}/min/moment-with-locales.min.js`;
+    case 'bootstrap':
+      return `https://cdn.jsdelivr.net/npm/bootstrap@${version}/dist/js/bootstrap.min.js`;
     default:
       throw new Error(`Failed to find ${npm}, please add this package.`);
   }
@@ -63,6 +66,8 @@ class ScriptOptimizer extends Optimizer {
       };
     });
 
+    const scriptMapByUrl = toMapByKey(artifacts.ScriptElements, 'src');
+
     return scriptUrls.map(scriptUrl => {
       const lib = jsLibsWithScript.find(({ matchedScript }) => matchedScript === scriptUrl);
       return {
@@ -70,6 +75,7 @@ class ScriptOptimizer extends Optimizer {
         isFromSameSite: isSameSite(pageUrl, scriptUrl),
         shouldMinify: true,
         lib,
+        content: scriptMapByUrl.get(scriptUrl).content,
       };
     });
   }
@@ -82,6 +88,16 @@ class ScriptOptimizer extends Optimizer {
         ...script,
         optimizedUrl: getCdnUrl(script.lib.npm, latestVersion),
       };
+    }
+    if (script.isFromSameSite && script.content) {
+      const hashHex = calcHash(script.content);
+      const optimizedUrl = await findAvailableUrlByHash(hashHex);
+      if (optimizedUrl) {
+        return {
+          ...script,
+          optimizedUrl,
+        };
+      }
     }
     if (script.isFromSameSite && script.shouldMinify) {
       const result = UglifyJS.minify(script.content);

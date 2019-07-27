@@ -156,7 +156,11 @@ class ImageOptimizer extends Optimizer {
     const imageMapByUrl = toMapByKey(images, 'src');
     const pageUrl = artifacts.URL.finalUrl;
     $('img[src]').each((i, element) => {
-      const imageUrl = toFullPathUrl(pageUrl, $(element).attr('src'));
+      const imgSrc = $(element).attr('src');
+      if (!imgSrc) {
+        return;
+      }
+      const imageUrl = toFullPathUrl(pageUrl, imgSrc);
       const image = imageMapByUrl.get(imageUrl);
       if (image) {
         this.applyOptimizedImage($(element), image);

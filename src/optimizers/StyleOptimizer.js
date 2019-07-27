@@ -112,6 +112,26 @@ class StyleOptimizer extends Optimizer {
 
   static ensureSupportPreload() {}
 
+  /**
+   * Even css file is reported useless, we still have to load entire file as it might be used when a dialog pop up
+   */
+  static insertReplaceStyleScript($) {
+    $('body').append(`
+      <script>
+        window.onload = function() {
+          const tempStyles = document.querySelectorAll('[data-replaced-url]');
+          tempStyles.forEach(ele => {
+            const link = document.createElement('link');
+            link.ref = 'stylesheet';
+            link.href = ele.data('replacedUrl');
+            document.insertBefore(ele, link);
+            ele.parentNode.removeChild(ele);
+          })
+        };
+      </script>
+    `);
+  }
+
   static async optimize($, artifacts, audits, context) {
     const stylesheets = await Promise.all(
       this.refine(artifacts).map(stylesheet => this.optimizeStyleSheet(stylesheet, context))
@@ -127,6 +147,7 @@ class StyleOptimizer extends Optimizer {
         logger.warn(`Lack information of stylesheet which url is ${stylesheetUrl}.`);
       }
     });
+    this.insertReplaceStyleScript($);
   }
 }
 

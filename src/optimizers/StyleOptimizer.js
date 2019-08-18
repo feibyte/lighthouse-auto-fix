@@ -66,10 +66,10 @@ class StyleOptimizer extends Optimizer {
   }
 
   static async optimizeStyleSheet(stylesheet, context) {
-    const stylesheetUrl = new URL(stylesheet.src);
     if (!stylesheet.isFromSameSite) {
       return stylesheet;
     }
+    const stylesheetUrl = new URL(stylesheet.src);
     const { pathname } = stylesheetUrl;
     const srcPath = path.resolve(context.srcDir, `.${pathname}`);
     const destPath = path.resolve(context.destDir, `.${pathname}`);
@@ -87,6 +87,7 @@ class StyleOptimizer extends Optimizer {
     );
     return {
       ...stylesheet,
+      src: pathname,
       content: processedResult.css,
       usedContent: processedUsedResult.css,
     };

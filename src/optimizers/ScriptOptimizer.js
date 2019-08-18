@@ -81,7 +81,6 @@ class ScriptOptimizer extends Optimizer {
   }
 
   static async optimizeScript(script, context) {
-    const scriptUrl = new URL(script.src);
     if (script.lib && script.lib.isVulnerable) {
       const latestVersion = await getLatestVersion(script.lib.npm, script.lib.version);
       return {
@@ -89,7 +88,13 @@ class ScriptOptimizer extends Optimizer {
         optimizedUrl: getCdnUrl(script.lib.npm, latestVersion),
       };
     }
-    if (script.isFromSameSite && script.content) {
+    if (!script.isFromSameSite) {
+      return {
+        ...script,
+        optimizedUrl: script.src,
+      };
+    }
+    if (script.content) {
       const hashHex = calcHash(script.content);
       const optimizedUrl = await findAvailableUrlByHash(hashHex);
       if (optimizedUrl) {
@@ -99,7 +104,8 @@ class ScriptOptimizer extends Optimizer {
         };
       }
     }
-    if (script.isFromSameSite && script.shouldMinify) {
+    const scriptUrl = new URL(script.src);
+    if (script.shouldMinify) {
       const result = UglifyJS.minify(script.content);
       if (!result.error) {
         const absolutePath = scriptUrl.pathname;
@@ -107,7 +113,7 @@ class ScriptOptimizer extends Optimizer {
         await fs.outputFile(destPath, result.code);
       }
     }
-    return { optimizedUrl: script.src, ...script };
+    return { optimizedUrl: scriptUrl.pathname, ...script };
   }
 
   static applyOptimizedScript($element, script) {

@@ -30,7 +30,7 @@
     "lighthouse": "^6.1.1",
     "lodash": "^4.17.19",
     "pacote": "^9.5.12",
-    "postcss": "^7.0.32",
+    "postcss": "^8.2.10",
     "request": "^2.88.2",
     "semver": "^6.3.0",
     "uglify-es": "^3.3.9",
